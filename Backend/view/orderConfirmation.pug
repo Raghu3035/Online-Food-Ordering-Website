@@ -1,0 +1,265 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Order Confirmation
+    style.
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: white;
+      }
+      .header {
+        background-color: white;
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #d32f2f;
+      }
+      .logo::before {
+        content: "★ ";
+        color: #d32f2f;
+      }
+      .shopping-bag {
+        font-size: 20px;
+        color: #666;
+      }
+      .main-content {
+        padding: 30px 20px;
+      }
+      .confirmation-heading {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      .email-notice {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+      .order-details {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .order-detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .order-detail-label {
+        color: #666;
+      }
+      .order-detail-value {
+        font-weight: bold;
+        color: #333;
+      }
+      .shipping-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .shipping-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+      }
+      .shipping-address {
+        line-height: 1.8;
+        color: #666;
+      }
+      .estimated-delivery {
+        background-color: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #2196f3;
+      }
+      .delivery-title {
+        font-weight: bold;
+        color: #1976d2;
+        margin-bottom: 5px;
+      }
+      .delivery-text {
+        color: #1976d2;
+        font-size: 14px;
+      }
+      .payment-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .payment-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+      }
+      .payment-info {
+        line-height: 1.8;
+        color: #666;
+      }
+      .support-section {
+        background-color: #fff3e0;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #ff9800;
+      }
+      .support-title {
+        font-weight: bold;
+        color: #e65100;
+        margin-bottom: 10px;
+      }
+      .support-info {
+        line-height: 1.8;
+        color: #666;
+        font-size: 14px;
+      }
+      .cta-button {
+        display: inline-block;
+        background-color: #d32f2f;
+        color: white;
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        margin: 20px 0;
+        font-size: 16px;
+      }
+      .cta-button:hover {
+        background-color: #b71c1c;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+        font-size: 12px;
+        border-top: 1px solid #e0e0e0;
+      }
+      .order-items {
+        margin: 20px 0;
+      }
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .item-row:last-child {
+        border-bottom: none;
+      }
+      .item-name {
+        font-weight: bold;
+        color: #333;
+      }
+      .item-quantity {
+        color: #666;
+        font-size: 12px;
+      }
+      .item-price {
+        font-weight: bold;
+        color: #d32f2f;
+      }
+
+  body
+    .container
+      .header
+        .logo OrderIt
+        .shopping-bag 🛍️
+      
+      .main-content
+        .confirmation-heading Thank you for your order, #{firstName}!
+        
+        .email-notice
+          | Your order has been placed and a confirmation email will be sent to #{email}.
+        
+        .order-details
+          .order-detail-row
+            span.order-detail-label Order number:
+            span.order-detail-value #{orderNumber}
+          .order-detail-row
+            span.order-detail-label Order total:
+            span.order-detail-value ₹#{finalTotal.toFixed(2)}
+          .order-detail-row
+            span.order-detail-label Payment method:
+            span.order-detail-value #{paymentInfo.status === 'succeeded' ? 'Credit/Debit Card' : paymentInfo.status}
+        
+        .order-items
+          each item in orderItems
+            .item-row
+              .item-details
+                span.item-name #{item.name}
+                br
+                span.item-quantity Quantity: #{item.quantity}
+              .item-price ₹#{item.price.toFixed(2)}
+        
+        .shipping-section
+          .shipping-title Shipping Information
+          .shipping-address
+            | #{deliveryInfo.address}
+            br
+            | #{deliveryInfo.city}, #{deliveryInfo.postalCode}
+            br
+            | #{deliveryInfo.country}
+            br
+            | Phone: #{deliveryInfo.phoneNo}
+        
+        .estimated-delivery
+          .delivery-title Estimated Delivery Time
+          .delivery-text Your order will be delivered within 30-45 minutes from the time of confirmation.
+        
+        .payment-section
+          .payment-title Payment Information
+          .payment-info
+            | Payment Status: #{paymentInfo.status === 'succeeded' ? 'Paid' : 'Pending'}
+            br
+            | Payment ID: #{paymentInfo.id || 'N/A'}
+            br
+            | Subtotal: ₹#{itemsPrice.toFixed(2)}
+            br
+            | Tax: ₹#{taxPrice.toFixed(2)}
+            br
+            | Delivery Charge: ₹#{deliveryCharge.toFixed(2)}
+        
+        .support-section
+          .support-title Need Help?
+          .support-info
+            | If you have any questions about your order, please contact us:
+            br
+            | Email: support@orderit.com
+            br
+            | Phone: +91 9876543210
+            br
+            | Hours: Monday - Friday, 9:00 AM - 6:00 PM
+        
+        .cta-button(href="http://localhost:3000") Continue Shopping
+        
+        .email-notice
+          | You can make changes to most orders up to 30 minutes after they have been placed.
+      
+      .footer
+        p Thank you for choosing OrderIt!
+        p This is an automated email. Please do not reply to this message. 
