@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from "react";
 import Loader from "../layouts/Loader";
 import { LiaRupeeSignSolid } from "react-icons/lia";
+import { FaStar } from "react-icons/fa";
 import { useAlert } from "react-alert";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
@@ -17,11 +18,13 @@ const OrderDetails = () => {
   const [review, setReview] = useState("");
   const [foodReviews, setFoodReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [reviewedByOrderItem, setReviewedByOrderItem] = useState({});
   const {
     loading,
     error,
     order = {},
   } = useSelector((state) => state.orderDetails);
+  const { user: loggedInUser } = useSelector((state) => state.auth);
 
   const {
     deliveryInfo,
@@ -39,6 +42,35 @@ const OrderDetails = () => {
       dispatch(clearErrors());
     }
   }, [dispatch, alert, error, id]);
+
+  useEffect(() => {
+    const fetchReviewedFlags = async () => {
+      if (!orderItems || !orderItems.length || !loggedInUser?._id || !order?._id) {
+        return;
+      }
+
+      const reviewFlags = {};
+      await Promise.all(
+        orderItems.map(async (item) => {
+          try {
+            const response = await axios.get(`/api/v1/eats/reviews/${item.fooditem}`);
+            const reviews = response?.data?.reviews || [];
+            const alreadyReviewedForThisOrder = reviews.some(
+              (r) =>
+                String(r.user) === String(loggedInUser._id) &&
+                String(r.orderId) === String(order._id)
+            );
+            reviewFlags[item.fooditem] = alreadyReviewedForThisOrder;
+          } catch (fetchError) {
+            reviewFlags[item.fooditem] = false;
+          }
+        })
+      );
+      setReviewedByOrderItem(reviewFlags);
+    };
+
+    fetchReviewedFlags();
+  }, [orderItems, loggedInUser, order]);
 
   const handleOpenReview = (item) => {
     setActiveReviewItemId(item.fooditem);
@@ -74,6 +106,10 @@ const OrderDetails = () => {
 
       const response = await axios.get(`/api/v1/eats/reviews/${item.fooditem}`);
       setFoodReviews(response?.data?.reviews || []);
+      setReviewedByOrderItem((prev) => ({
+        ...prev,
+        [item.fooditem]: true,
+      }));
       alert.success("Thanks! Your review has been submitted.");
       setReview("");
     } catch (submitError) {
@@ -159,33 +195,40 @@ const OrderDetails = () => {
 
                       <div className="col-4 col-lg-3 mt-4 mt-lg-0">
                         <p>{item.quantity} Item(s)</p>
-                        {String(orderStatus || "").toLowerCase() === "delivered" && (
+                        {String(orderStatus || "").toLowerCase() === "delivered" &&
+                          !reviewedByOrderItem[item.fooditem] && (
                           <button
                             type="button"
-                            className="btn btn-sm review-btn mt-2"
+                            className="btn btn-sm delivery-review-btn mt-2"
                             onClick={() => handleOpenReview(item)}
                           >
                             Give Rating & Review
                           </button>
                         )}
+                        {String(orderStatus || "").toLowerCase() === "delivered" &&
+                          reviewedByOrderItem[item.fooditem] && (
+                            <p className="already-reviewed mt-2 mb-0">
+                              Review submitted for this order
+                            </p>
+                          )}
                       </div>
                       </div>
 
                       {activeReviewItemId === item.fooditem && (
                         <div className="review-form-box mb-4">
-                          <label htmlFor={`rating-${item.fooditem}`}>Rating</label>
-                          <select
-                            id={`rating-${item.fooditem}`}
-                            className="form-control mb-2"
-                            value={rating}
-                            onChange={(e) => setRating(Number(e.target.value))}
-                          >
-                            <option value={5}>5 - Excellent</option>
-                            <option value={4}>4 - Good</option>
-                            <option value={3}>3 - Average</option>
-                            <option value={2}>2 - Poor</option>
-                            <option value={1}>1 - Bad</option>
-                          </select>
+                          <label>Rate this item</label>
+                          <div className="review-stars mb-2">
+                            {[1, 2, 3, 4, 5].map((starValue) => (
+                              <button
+                                key={starValue}
+                                type="button"
+                                className={`star-btn ${rating >= starValue ? "active" : ""}`}
+                                onClick={() => setRating(starValue)}
+                              >
+                                <FaStar />
+                              </button>
+                            ))}
+                          </div>
                           <label htmlFor={`review-${item.fooditem}`}>Review</label>
                           <textarea
                             id={`review-${item.fooditem}`}

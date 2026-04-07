@@ -5,7 +5,6 @@ import { FaRegEye } from "react-icons/fa6";
 import { useAlert } from "react-alert";
 import { useDispatch, useSelector } from "react-redux";
 import { clearErrors, myOrders } from "../../actions/orderAction";
-import { getRestaurants } from "../../actions/restaurantAction";
 import { Link } from "react-router-dom";
 import { SkeletonOrder, SkeletonGrid, SkeletonStyles } from "../layouts/Skeleton";
 
@@ -14,15 +13,9 @@ const ListOrders = () => {
   const dispatch = useDispatch();
 
   const { loading, error, orders } = useSelector((state) => state.myOrders);
-  const restaurants = useSelector((state) => state.restaurants);
-
-  const restaurantList = Array.isArray(restaurants.restaurants)
-    ? restaurants.restaurants
-    : [];
 
   useEffect(() => {
     dispatch(myOrders());
-    dispatch(getRestaurants());
     if (error) {
       alert.error(error);
       dispatch(clearErrors());
@@ -76,7 +69,7 @@ const ListOrders = () => {
       ],
       rows: [],
     };
-    if (orders && orders.length > 0 && restaurantList.length > 0) {
+    if (orders && orders.length > 0) {
       const sortedOrders = orders.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
@@ -85,12 +78,8 @@ const ListOrders = () => {
           .map((item) => item.name)
           .join(",");
 
-        const restaurant = restaurantList.find(
-          (restaurant) => restaurant._id.toString() === order.restaurant._id
-        );
-
         data.rows.push({
-          restaurant: restaurant?.name || "unknown Restaurant",
+          restaurant: order?.restaurant?.name || "unknown Restaurant",
           numOfItems: order.orderItems.length,
           amount: (
             <span>

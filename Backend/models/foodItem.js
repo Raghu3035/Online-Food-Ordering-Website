@@ -50,6 +50,7 @@ const foodSchema = new Schema({
   reviews: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
       name: { type: String, required: true },
       rating: { type: Number, required: true },
       Comment: { type: String, required: true },

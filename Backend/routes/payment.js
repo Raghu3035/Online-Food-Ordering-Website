@@ -58,7 +58,7 @@ function _0x2f29() {
 const express = require(_0x3b3c9c(0xf4)),
   router = express[_0x3b3c9c(0xf5)](),
   authController = require("../controllers/authController"),
-  { processPayment, sendStripApi } = require(_0x3b3c9c(0xf1));
+  { processPayment, sendStripApi } = require("../controllers/paymentControllerV2");
 router[_0x3b3c9c(0xf6)](_0x3b3c9c(0xf0))[_0x3b3c9c(0xe9)](
   authController[_0x3b3c9c(0xeb)],
   processPayment

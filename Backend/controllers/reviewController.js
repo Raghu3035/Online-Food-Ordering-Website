@@ -30,7 +30,7 @@ exports.submitFoodReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("This food item is not part of your order.", 400));
   }
 
-  const foodItem = await FoodItem.findById(foodItemId);
+  const foodItem = await FoodItem.findById(foodItemId).lean();
   if (!foodItem) {
     return next(new ErrorHandler("Food item not found.", 404));
   }
@@ -40,18 +40,24 @@ exports.submitFoodReview = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Rating must be between 1 and 5.", 400));
   }
 
-  const existingReviewIndex = (foodItem.reviews || []).findIndex(
-    (review) => review.user && String(review.user) === String(req.user._id)
+  const updatedReviews = [...(foodItem.reviews || [])];
+  const existingReviewIndex = updatedReviews.findIndex(
+    (review) =>
+      review.user &&
+      review.orderId &&
+      String(review.user) === String(req.user._id) &&
+      String(review.orderId) === String(orderId)
   );
 
   if (existingReviewIndex >= 0) {
-    foodItem.reviews[existingReviewIndex].rating = numericRating;
-    foodItem.reviews[existingReviewIndex].Comment = comment;
-    foodItem.reviews[existingReviewIndex].name = req.user.name;
-    foodItem.reviews[existingReviewIndex].createdAt = new Date();
+    updatedReviews[existingReviewIndex].rating = numericRating;
+    updatedReviews[existingReviewIndex].Comment = comment;
+    updatedReviews[existingReviewIndex].name = req.user.name;
+    updatedReviews[existingReviewIndex].createdAt = new Date();
   } else {
-    foodItem.reviews.push({
+    updatedReviews.push({
       user: req.user._id,
+      orderId,
       name: req.user.name,
       rating: numericRating,
       Comment: comment,
@@ -59,16 +65,23 @@ exports.submitFoodReview = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
-  foodItem.numOfReviews = foodItem.reviews.length;
-  const ratingSum = foodItem.reviews.reduce(
+  const numOfReviews = updatedReviews.length;
+  const ratingSum = updatedReviews.reduce(
     (sum, review) => sum + Number(review.rating || 0),
     0
   );
-  foodItem.ratings = foodItem.reviews.length
-    ? ratingSum / foodItem.reviews.length
-    : 0;
+  const ratings = numOfReviews ? ratingSum / numOfReviews : 0;
 
-  await foodItem.save();
+  await FoodItem.updateOne(
+    { _id: foodItemId },
+    {
+      $set: {
+        reviews: updatedReviews,
+        numOfReviews,
+        ratings,
+      },
+    }
+  );
 
   res.status(200).json({
     success: true,

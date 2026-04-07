@@ -22,10 +22,9 @@ const _0x13a450 = _0x6160;
 })(_0x44f7, 0xb21fe);
 const express = require("express"),
   router = express["Router"](),
-  { newOrder, getSingleOrder, myOrders } = require(_0x13a450(0xdb)),
+  { newOrder, getSingleOrder, myOrders } = require("../controllers/orderControllerV2"),
   authController = require(_0x13a450(0xde));
 router[_0x13a450(0xdf)](_0x13a450(0xe8))["post"](
-  authController[_0x13a450(0xe7)],
   newOrder
 ),
   router[_0x13a450(0xdf)]("/:id")["get"](
